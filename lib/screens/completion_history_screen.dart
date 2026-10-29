@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../data/completion_repository.dart';
 import '../models/habit_completion.dart';
+import 'completion_form_screen.dart';
 
 class CompletionHistoryScreen extends StatefulWidget {
   final int habitId;
@@ -17,8 +19,7 @@ class CompletionHistoryScreen extends StatefulWidget {
       _CompletionHistoryScreenState();
 }
 
-class _CompletionHistoryScreenState
-    extends State<CompletionHistoryScreen> {
+class _CompletionHistoryScreenState extends State<CompletionHistoryScreen> {
   final repository = CompletionRepository();
 
   List<HabitCompletion> records = [];
@@ -38,9 +39,7 @@ class _CompletionHistoryScreenState
     });
 
     try {
-      final result = await repository.getCompletions(
-        habitId: widget.habitId,
-      );
+      final result = await repository.getCompletions(habitId: widget.habitId);
 
       if (!mounted) return;
 
@@ -55,6 +54,22 @@ class _CompletionHistoryScreenState
         loading = false;
         errorMessage = 'Could not load records. Please try again.';
       });
+    }
+  }
+
+  Future<void> openForm({HabitCompletion? record}) async {
+    final saved = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            CompletionFormScreen(habitId: widget.habitId, record: record),
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (saved == true) {
+      await loadRecords();
     }
   }
 
@@ -79,19 +94,17 @@ class _CompletionHistoryScreenState
         ),
       );
     } else if (records.isEmpty) {
-      content = const Center(
-        child: Text('No activity records yet.'),
-      );
+      content = const Center(child: Text('No activity records yet.'));
     } else {
       content = ListView.builder(
         itemCount: records.length,
         itemBuilder: (context, index) {
           final record = records[index];
           final date = DateTime.parse(record.completionDate);
-          final dateLabel =
-              '${date.month}/${date.day}/${date.year}';
+          final dateLabel = '${date.month}/${date.day}/${date.year}';
 
           return ListTile(
+            onTap: () => openForm(record: record),
             leading: Icon(
               record.status == 'completed'
                   ? Icons.check_circle_outline
@@ -120,6 +133,11 @@ class _CompletionHistoryScreenState
         ],
       ),
       body: SafeArea(child: content),
+      floatingActionButton: FloatingActionButton(
+        tooltip: 'Add activity',
+        onPressed: loading ? null : () => openForm(),
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
