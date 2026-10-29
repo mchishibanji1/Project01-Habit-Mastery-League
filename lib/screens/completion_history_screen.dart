@@ -25,6 +25,17 @@ class _CompletionHistoryScreenState extends State<CompletionHistoryScreen> {
   List<HabitCompletion> records = [];
   bool loading = true;
   String? errorMessage;
+  String selectedStatus = 'all';
+
+  List<HabitCompletion> get filteredRecords {
+    if (selectedStatus == 'all') {
+      return records;
+    }
+
+    return records.where((record) {
+      return record.status == selectedStatus;
+    }).toList();
+  }
 
   @override
   void initState() {
@@ -133,6 +144,10 @@ class _CompletionHistoryScreenState extends State<CompletionHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final visibleRecords = filteredRecords;
+    final completedCount = records.where((record) {
+      return record.status == 'completed';
+    }).length;
     Widget content;
 
     if (loading) {
@@ -151,13 +166,19 @@ class _CompletionHistoryScreenState extends State<CompletionHistoryScreen> {
           ],
         ),
       );
-    } else if (records.isEmpty) {
-      content = const Center(child: Text('No activity records yet.'));
+    } else if (visibleRecords.isEmpty) {
+      content = Center(
+        child: Text(
+          records.isEmpty
+              ? 'No activity records yet.'
+              : 'No records match this filter.',
+        ),
+      );
     } else {
       content = ListView.builder(
-        itemCount: records.length,
+        itemCount: visibleRecords.length,
         itemBuilder: (context, index) {
-          final record = records[index];
+          final record = visibleRecords[index];
           final date = DateTime.parse(record.completionDate);
           final dateLabel = '${date.month}/${date.day}/${date.year}';
 
@@ -195,7 +216,57 @@ class _CompletionHistoryScreenState extends State<CompletionHistoryScreen> {
           ),
         ],
       ),
-      body: SafeArea(child: content),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    loading || errorMessage != null
+                        ? 'Summary unavailable'
+                        : 'Total records: ${records.length}'
+                              '  |  Completed: $completedCount',
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedStatus,
+                    decoration: const InputDecoration(
+                      labelText: 'Filter by status',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'all',
+                        child: Text('All records'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'completed',
+                        child: Text('Completed'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'in_progress',
+                        child: Text('In progress'),
+                      ),
+                    ],
+                    onChanged: loading
+                        ? null
+                        : (value) {
+                            if (value == null) return;
+                            setState(() {
+                              selectedStatus = value;
+                            });
+                          },
+                  ),
+                ],
+              ),
+            ),
+            Expanded(child: content),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         tooltip: 'Add activity',
         onPressed: loading ? null : () => openForm(),
