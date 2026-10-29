@@ -14,8 +14,7 @@ class CompletionRepository {
       throw ArgumentError('Enter a valid completion date.');
     }
 
-    if (record.status != 'in_progress' &&
-        record.status != 'completed') {
+    if (record.status != 'in_progress' && record.status != 'completed') {
       throw ArgumentError('Invalid completion status.');
     }
 
@@ -36,9 +35,7 @@ class CompletionRepository {
     return db.insert('habit_completions', data);
   }
 
-  Future<List<HabitCompletion>> getCompletions({
-    int? habitId,
-  }) async {
+  Future<List<HabitCompletion>> getCompletions({int? habitId}) async {
     final db = await DatabaseHelper.instance.database;
 
     final rows = await db.query(
@@ -87,5 +84,66 @@ class CompletionRepository {
       where: 'completionId = ?',
       whereArgs: [completionId],
     );
+  }
+
+  Future<List<Map<String, Object?>>> getHistory({
+    int? habitId,
+    String? category,
+    int? lastDays,
+  }) async {
+    if (lastDays != null && lastDays < 1) {
+      throw ArgumentError('The number of days must be positive.');
+    }
+
+    final db = await DatabaseHelper.instance.database;
+    final List<String> conditions = [];
+    final List<Object?> arguments = [];
+
+    if (habitId != null) {
+      conditions.add('h.habitId = ?');
+      arguments.add(habitId);
+    }
+
+    if (category != null) {
+      conditions.add('h.category = ?');
+      arguments.add(category);
+    }
+
+    if (lastDays != null) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      // Include today and the previous lastDays - 1 calendar days.
+      final start = DateTime(today.year, today.month, today.day - lastDays + 1);
+
+      final end = DateTime(today.year, today.month, today.day + 1);
+
+      conditions.add('c.completionDate >= ?');
+      arguments.add(start.toIso8601String());
+
+      conditions.add('c.completionDate < ?');
+      arguments.add(end.toIso8601String());
+    }
+
+    String whereClause = '';
+
+    if (conditions.isNotEmpty) {
+      whereClause = 'WHERE ${conditions.join(' AND ')}';
+    }
+
+    return db.rawQuery('''
+      SELECT
+        c.completionId,
+        c.habitId,
+        c.completionDate,
+        c.status,
+        c.note,
+        h.name AS habitName,
+        h.category
+      FROM habit_completions AS c
+      INNER JOIN habits AS h ON c.habitId = h.habitId
+      $whereClause
+      ORDER BY c.completionDate DESC, c.completionId DESC
+    ''', arguments);
   }
 }
