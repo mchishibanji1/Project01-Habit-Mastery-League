@@ -73,6 +73,64 @@ class _CompletionHistoryScreenState extends State<CompletionHistoryScreen> {
     }
   }
 
+  Future<void> confirmDelete(HabitCompletion record) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete activity?'),
+          content: const Text(
+            'This activity record will be permanently deleted.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (!mounted || confirmed != true) return;
+
+    setState(() {
+      loading = true;
+    });
+
+    try {
+      final count = await repository.deleteCompletion(record.completionId!);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            count == 1 ? 'Activity deleted.' : 'The record no longer exists.',
+          ),
+        ),
+      );
+
+      await loadRecords();
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        loading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not delete the record. Please try again.'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget content;
@@ -116,6 +174,11 @@ class _CompletionHistoryScreenState extends State<CompletionHistoryScreen> {
               '\n${record.note.isEmpty ? 'No note' : record.note}',
             ),
             isThreeLine: true,
+            trailing: IconButton(
+              tooltip: 'Delete activity',
+              icon: const Icon(Icons.delete_outline),
+              onPressed: () => confirmDelete(record),
+            ),
           );
         },
       );
