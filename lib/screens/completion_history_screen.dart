@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/completion_repository.dart';
 import '../models/habit_completion.dart';
 import 'completion_form_screen.dart';
+import 'history_insights_screen.dart';
 
 class CompletionHistoryScreen extends StatefulWidget {
   final int habitId;
@@ -209,6 +210,21 @@ class _CompletionHistoryScreenState extends State<CompletionHistoryScreen> {
       appBar: AppBar(
         title: Text('${widget.habitName} History'),
         actions: [
+          IconButton(
+            tooltip: 'All history and insights',
+            icon: const Icon(Icons.bar_chart),
+            onPressed: loading
+                ? null
+                : () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const HistoryInsightsScreen(),
+                      ),
+                    );
+                  },
+          ),
           IconButton(
             tooltip: 'Refresh records',
             onPressed: loading ? null : loadRecords,
