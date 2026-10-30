@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+
 import '../data/database_helper.dart';
 import '../data/completion_repository.dart';
+import '../data/settings_repository.dart';
 
 class HistoryInsightsScreen extends StatefulWidget {
   const HistoryInsightsScreen({super.key});
 
   @override
-  State<HistoryInsightsScreen> createState() =>
-      _HistoryInsightsScreenState();
+  State<HistoryInsightsScreen> createState() => _HistoryInsightsScreenState();
 }
 
 class _HistoryInsightsScreenState extends State<HistoryInsightsScreen> {
   final repository = CompletionRepository();
+  final settingsRepository = SettingsRepository();
+  bool showNotes = true;
 
   List<Map<String, Object?>> habits = [];
   List<Map<String, Object?>> records = [];
@@ -27,7 +30,30 @@ class _HistoryInsightsScreenState extends State<HistoryInsightsScreen> {
   @override
   void initState() {
     super.initState();
-    loadHistory();
+    loadPreferences();
+  }
+
+  Future<void> loadPreferences() async {
+    try {
+      final days = await settingsRepository.getHistoryDays();
+      final notes = await settingsRepository.getShowNotes();
+
+      if (!mounted) return;
+
+      setState(() {
+        selectedDays = days;
+        showNotes = notes;
+      });
+
+      await loadHistory();
+    } catch (error) {
+      if (!mounted) return;
+
+      setState(() {
+        loading = false;
+        errorMessage = 'Could not load preferences. Please try again.';
+      });
+    }
   }
 
   Future<void> loadHistory() async {
@@ -115,25 +141,22 @@ class _HistoryInsightsScreenState extends State<HistoryInsightsScreen> {
           children: [
             Text(errorMessage!),
             ElevatedButton(
-              onPressed: loadHistory,
+              onPressed: loadPreferences,
               child: const Text('Try again'),
             ),
           ],
         ),
       );
     } else if (records.isEmpty) {
-      content = const Center(
-        child: Text('No records match these filters.'),
-      );
+      content = const Center(child: Text('No records match these filters.'));
     } else {
       content = ListView.builder(
         itemCount: records.length,
         itemBuilder: (context, index) {
           final record = records[index];
-          final date = DateTime.parse(
-            record['completionDate'] as String,
-          );
+          final date = DateTime.parse(record['completionDate'] as String);
           final completed = record['status'] == 'completed';
+          final note = record['note'] as String;
 
           return ListTile(
             leading: Icon(
@@ -143,9 +166,9 @@ class _HistoryInsightsScreenState extends State<HistoryInsightsScreen> {
             subtitle: Text(
               '${record['category']}'
               ' · ${date.month}/${date.day}/${date.year}'
-              '\n${completed ? 'Completed' : 'In progress'}',
+              '\n${completed ? 'Completed' : 'In progress'}'
+              '${showNotes && note.isNotEmpty ? '\n$note' : ''}',
             ),
-            isThreeLine: true,
           );
         },
       );
@@ -227,14 +250,8 @@ class _HistoryInsightsScreenState extends State<HistoryInsightsScreen> {
                       isExpanded: true,
                       value: selectedDays,
                       items: const [
-                        DropdownMenuItem(
-                          value: 0,
-                          child: Text('All time'),
-                        ),
-                        DropdownMenuItem(
-                          value: 7,
-                          child: Text('Last 7 days'),
-                        ),
+                        DropdownMenuItem(value: 0, child: Text('All time')),
+                        DropdownMenuItem(value: 7, child: Text('Last 7 days')),
                         DropdownMenuItem(
                           value: 30,
                           child: Text('Last 30 days'),
@@ -255,7 +272,7 @@ class _HistoryInsightsScreenState extends State<HistoryInsightsScreen> {
                       loading || errorMessage != null
                           ? 'Summary unavailable'
                           : 'Matching records: ${records.length}'
-                              '\nCompleted: $completedCount',
+                                '\nCompleted: $completedCount',
                     ),
                   ],
                 ),

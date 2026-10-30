@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'data/database_helper.dart';
 import 'screens/completion_history_screen.dart';
+import 'screens/settings_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -75,7 +76,23 @@ class PreviewHabitList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Development Preview')),
+      appBar: AppBar(
+        title: const Text('Development Preview'),
+        actions: [
+          IconButton(
+            tooltip: 'Settings',
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: ListView.builder(
         itemCount: habits.length,
         itemBuilder: (context, index) {
