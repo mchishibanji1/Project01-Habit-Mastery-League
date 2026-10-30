@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'data/database_helper.dart';
 import 'screens/completion_history_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/habit_helper_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,6 +80,18 @@ class PreviewHabitList extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Development Preview'),
         actions: [
+          IconButton(
+            tooltip: 'Habit helper',
+            icon: const Icon(Icons.lightbulb_outline),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HabitHelperScreen(),
+                ),
+              );
+            },
+          ),
           IconButton(
             tooltip: 'Settings',
             icon: const Icon(Icons.settings),
