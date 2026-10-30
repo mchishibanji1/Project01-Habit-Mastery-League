@@ -4,42 +4,63 @@ import '../data/database_helper.dart';
 import '../models/habit.dart';
 
 class HabitEditorScreen extends StatefulWidget {
+  final Habit? habit; // Add this to accept an existing habit
+
+  HabitEditorScreen({this.habit}); // Update constructor
+
   @override
   _HabitEditorScreenState createState() => _HabitEditorScreenState();
 }
 
 class _HabitEditorScreenState extends State<HabitEditorScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _descController = TextEditingController();
-  String _category = 'Study';
-  int _targetFrequency = 1;
+  late TextEditingController _nameController;
+  late TextEditingController _descController;
+  late String _category;
+  late int _targetFrequency;
+
+  @override
+  void initState() {
+    super.initState();
+    // If we are editing, pre-fill the fields. Otherwise, use defaults.
+    _nameController = TextEditingController(text: widget.habit?.name ?? '');
+    _descController = TextEditingController(
+      text: widget.habit?.description ?? '',
+    );
+    _category = widget.habit?.category ?? 'Study';
+    _targetFrequency = widget.habit?.targetFrequency ?? 1;
+  }
 
   void _saveHabit() async {
     if (_formKey.currentState!.validate()) {
       final newHabit = Habit(
+        habitId: widget.habit?.habitId, // Keep ID if editing
         name: _nameController.text.trim(),
         description: _descController.text.trim(),
         category: _category,
         targetFrequency: _targetFrequency,
-        createdAt: DateTime.now().toIso8601String(),
+        createdAt:
+            widget.habit?.createdAt ??
+            DateTime.now().toIso8601String(), // Keep original date
+        isActive: widget.habit?.isActive ?? true,
       );
 
-      await DatabaseHelper.instance.insertHabit(newHabit);
-
-      if (mounted) {
-        Navigator.pop(
-          context,
-          true,
-        ); // Return true to tell dashboard to refresh
+      if (widget.habit == null) {
+        await DatabaseHelper.instance.insertHabit(newHabit);
+      } else {
+        await DatabaseHelper.instance.updateHabit(newHabit);
       }
+
+      if (mounted) Navigator.pop(context, true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('New Habit')),
+      appBar: AppBar(
+        title: Text(widget.habit == null ? 'New Habit' : 'Edit Habit'),
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -80,7 +101,10 @@ class _HabitEditorScreenState extends State<HabitEditorScreen> {
                   setState(() => _targetFrequency = val.toInt()),
             ),
             SizedBox(height: 24),
-            ElevatedButton(onPressed: _saveHabit, child: Text('Save Habit')),
+            ElevatedButton(
+              onPressed: _saveHabit,
+              child: Text(widget.habit == null ? 'Save Habit' : 'Update Habit'),
+            ),
           ],
         ),
       ),

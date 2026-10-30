@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/database_helper.dart';
 import '../models/habit.dart';
 import 'habit_editor.dart';
+import 'habit_details.dart';
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -41,6 +42,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     '${habit.category} • ${habit.targetFrequency}x/week',
                   ),
                   trailing: Icon(Icons.chevron_right),
+                  // ONTAP BLOCK BELOW
+                  onTap: () async {
+                    final changed = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HabitDetailsScreen(habit: habit),
+                      ),
+                    );
+                    // If the user edited or deleted the habit, refresh the list
+                    if (changed == true) {
+                      _loadHabits();
+                    }
+                  },
                 );
               },
             ),
