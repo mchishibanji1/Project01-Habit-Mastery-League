@@ -1,3 +1,5 @@
+import '../models/habit.dart';
+
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
@@ -60,5 +62,35 @@ class DatabaseHelper {
         ''');
       },
     );
+  }
+  // --- HABIT CRUD METHODS ---
+
+  Future<int> insertHabit(Habit habit) async {
+    final db = await database;
+    return await db.insert('habits', habit.toMap());
+  }
+
+  Future<List<Habit>> getHabits() async {
+    final db = await database;
+    final List<Map<String, Object?>> maps = await db.query(
+      'habits',
+      orderBy: 'createdAt DESC',
+    );
+    return maps.map((map) => Habit.fromMap(map)).toList();
+  }
+
+  Future<int> updateHabit(Habit habit) async {
+    final db = await database;
+    return await db.update(
+      'habits',
+      habit.toMap(),
+      where: 'habitId = ?',
+      whereArgs: [habit.habitId],
+    );
+  }
+
+  Future<int> deleteHabit(int id) async {
+    final db = await database;
+    return await db.delete('habits', where: 'habitId = ?', whereArgs: [id]);
   }
 }
