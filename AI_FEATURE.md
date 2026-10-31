@@ -144,7 +144,13 @@ Completion records could be created, read, updated, and deleted
 offline. Canceling deletion preserved the record.
 A saved record remained after closing and reopening the app.
 
-Second-device/emulator verification: pending.
+Second-emulator offline verification passed on October 31, 2026, using the Pixel 8 Android emulator.
+With airplane mode enabled and Wi-Fi disabled, completion CRUD,
+deletion cancellation, persistence after reopening the app,
+and helper refresh worked successfully.
+
+These checks cover the development preview.
+The final integrated app still requires regression testing.
 
 ## Source locations
 
