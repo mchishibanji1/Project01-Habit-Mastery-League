@@ -4,12 +4,12 @@ import '../data/database_helper.dart';
 import '../models/habit.dart';
 
 class HabitEditorScreen extends StatefulWidget {
-  final Habit? habit; // Add this to accept an existing habit
+  final Habit? habit;
 
-  HabitEditorScreen({this.habit}); // Update constructor
+  const HabitEditorScreen({super.key, this.habit});
 
   @override
-  _HabitEditorScreenState createState() => _HabitEditorScreenState();
+  State<HabitEditorScreen> createState() => _HabitEditorScreenState();
 }
 
 class _HabitEditorScreenState extends State<HabitEditorScreen> {
@@ -19,10 +19,11 @@ class _HabitEditorScreenState extends State<HabitEditorScreen> {
   late String _category;
   late int _targetFrequency;
 
+  bool _isSaving = false; // Prevents duplicate saves
+
   @override
   void initState() {
     super.initState();
-    // If we are editing, pre-fill the fields. Otherwise, use defaults.
     _nameController = TextEditingController(text: widget.habit?.name ?? '');
     _descController = TextEditingController(
       text: widget.habit?.description ?? '',
@@ -31,27 +32,44 @@ class _HabitEditorScreenState extends State<HabitEditorScreen> {
     _targetFrequency = widget.habit?.targetFrequency ?? 1;
   }
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descController.dispose();
+    super.dispose();
+  }
+
   void _saveHabit() async {
     if (_formKey.currentState!.validate()) {
-      final newHabit = Habit(
-        habitId: widget.habit?.habitId, // Keep ID if editing
-        name: _nameController.text.trim(),
-        description: _descController.text.trim(),
-        category: _category,
-        targetFrequency: _targetFrequency,
-        createdAt:
-            widget.habit?.createdAt ??
-            DateTime.now().toIso8601String(), // Keep original date
-        isActive: widget.habit?.isActive ?? true,
-      );
+      setState(() => _isSaving = true); // Disable button while saving
 
-      if (widget.habit == null) {
-        await DatabaseHelper.instance.insertHabit(newHabit);
-      } else {
-        await DatabaseHelper.instance.updateHabit(newHabit);
+      try {
+        final newHabit = Habit(
+          habitId: widget.habit?.habitId,
+          name: _nameController.text.trim(),
+          description: _descController.text.trim(),
+          category: _category,
+          targetFrequency: _targetFrequency,
+          createdAt:
+              widget.habit?.createdAt ?? DateTime.now().toIso8601String(),
+          isActive: widget.habit?.isActive ?? true,
+        );
+
+        if (widget.habit == null) {
+          await DatabaseHelper.instance.insertHabit(newHabit);
+        } else {
+          await DatabaseHelper.instance.updateHabit(newHabit);
+        }
+
+        if (mounted) Navigator.pop(context, true);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Error saving habit: $e')));
+        }
+      } finally {
+        if (mounted) setState(() => _isSaving = false);
       }
-
-      if (mounted) Navigator.pop(context, true);
     }
   }
 
@@ -64,23 +82,29 @@ class _HabitEditorScreenState extends State<HabitEditorScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           children: [
             TextFormField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: 'Habit Name'),
-              validator: (val) =>
-                  val == null || val.isEmpty ? 'Name is required' : null,
+              decoration: const InputDecoration(labelText: 'Habit Name'),
+              validator: (val) {
+                if (val == null || val.trim().isEmpty) {
+                  return 'Name is required and cannot be empty';
+                }
+                return null;
+              },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _descController,
-              decoration: InputDecoration(labelText: 'Description (Optional)'),
+              decoration: const InputDecoration(
+                labelText: 'Description (Optional)',
+              ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _category,
-              decoration: InputDecoration(labelText: 'Category'),
+              initialValue: _category,
+              decoration: const InputDecoration(labelText: 'Category'),
               items: [
                 'Study',
                 'Health',
@@ -89,7 +113,7 @@ class _HabitEditorScreenState extends State<HabitEditorScreen> {
               ].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
               onChanged: (val) => setState(() => _category = val!),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text('Target Frequency: $_targetFrequency time(s) per week'),
             Slider(
               value: _targetFrequency.toDouble(),
@@ -100,10 +124,12 @@ class _HabitEditorScreenState extends State<HabitEditorScreen> {
               onChanged: (val) =>
                   setState(() => _targetFrequency = val.toInt()),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: _saveHabit,
-              child: Text(widget.habit == null ? 'Save Habit' : 'Update Habit'),
+              onPressed: _isSaving ? null : _saveHabit, // Disable if saving
+              child: _isSaving
+                  ? const CircularProgressIndicator()
+                  : Text(widget.habit == null ? 'Save Habit' : 'Update Habit'),
             ),
           ],
         ),

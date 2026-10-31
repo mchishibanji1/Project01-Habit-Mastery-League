@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import '../data/database_helper.dart';
 import '../models/habit.dart';
 import 'habit_editor.dart';
+import 'completion_history_screen.dart'; // <-- ADDED THIS IMPORT
 
 class HabitDetailsScreen extends StatelessWidget {
   final Habit habit;
 
-  HabitDetailsScreen({required this.habit});
+  const HabitDetailsScreen({super.key, required this.habit});
 
   void _deleteHabit(BuildContext context) async {
     // 1. Show confirmation dialog
@@ -53,8 +54,9 @@ class HabitDetailsScreen extends StatelessWidget {
                   builder: (context) => HabitEditorScreen(habit: habit),
                 ),
               );
-              if (updated == true && context.mounted)
-                Navigator.pop(context, true); // Refresh dashboard
+              if (updated == true && context.mounted) {
+                Navigator.pop(context, true); // Refresh dashboard after edit
+              }
             },
           ),
           IconButton(
@@ -82,12 +84,17 @@ class HabitDetailsScreen extends StatelessWidget {
                   : habit.description,
             ),
             Spacer(),
-            // Placeholder for Rob's completion screen integration
+            // --- CONNECTED TO ROB'S SCREEN ---
             ElevatedButton.icon(
               onPressed: () {
-                // TODO: Link to Rob's completion history screen later
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Completion logs coming soon!')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CompletionHistoryScreen(
+                      habitId: habit.habitId!,
+                      habitName: habit.name,
+                    ),
+                  ),
                 );
               },
               icon: Icon(Icons.check_circle),

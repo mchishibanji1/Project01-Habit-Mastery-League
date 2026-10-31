@@ -4,10 +4,13 @@ import '../data/database_helper.dart';
 import '../models/habit.dart';
 import 'habit_editor.dart';
 import 'habit_details.dart';
+import 'habit_helper_screen.dart'; // <-- ADDED THIS IMPORT
 
 class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
+
   @override
-  _DashboardScreenState createState() => _DashboardScreenState();
+  State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
@@ -29,7 +32,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('My Habits')),
+      // --- UPDATED APP BAR WITH LIGHTBULB ICON ---
+      appBar: AppBar(
+        title: Text('My Habits'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.lightbulb),
+            tooltip: 'Habit Helper',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HabitHelperScreen(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      // -------------------------------------------
       body: _habits.isEmpty
           ? Center(child: Text('No habits yet. Add one!'))
           : ListView.builder(
@@ -42,7 +63,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     '${habit.category} • ${habit.targetFrequency}x/week',
                   ),
                   trailing: Icon(Icons.chevron_right),
-                  // ONTAP BLOCK BELOW
                   onTap: () async {
                     final changed = await Navigator.push(
                       context,

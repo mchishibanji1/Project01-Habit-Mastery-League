@@ -32,10 +32,14 @@ Screen 4: History (Rob)
 -States: Default list, Filtered list.
 -Test Case: Given the user selects "Read every day", when the filter applies, they expect only that habit's history to show.
 
+Steps: Ran the full app from `main.dart`. Logged a completion for a habit via the Details screen. Navigated to the History tab. Toggled a setting in the Settings tab, saved, and restarted the app.
+-Expected: Completion shows in History. Setting persists after restart.
+-Result: PASS. The history record appeared correctly, and the settings toggled state remained after a full app restart.
+
 Screen 5: Settings (Rob)
--Purpose: Preferences and Smart Helper entry point.
+Purpose: Manage user preferences for history and notes.
 -Entry: Bottom Navigation.
--Primary Act: Toggle settings, open Smart Helper.
--Data: SharedPreferences, reads from `habits`/`habit_completions`.
--States: Default, Insufficient Data ("Not enough data yet.").
--Test Case: Given the user toggles Dark Mode, when they restart the app, they expect the setting to persist.
+-Primary Act: Toggle settings and save.
+-Data: Writes to SharedPreferences.
+-States: Default, Saving, Success.
+-Test Case: Given the user toggles "Show activity notes", when they save and restart the app, the setting should persist.
