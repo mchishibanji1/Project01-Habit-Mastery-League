@@ -20,6 +20,17 @@ Test 3: Habit Deletion Persistence
 -Result: PASS. The deletion persisted; the dashboard remained empty after restart. (See Screenshots 5 & 6)
 
 Test 4: Cross-Screen Data Flow (Integration)
--Steps: Logged a completion for a habit. Navigated to the History tab. Toggled a setting in the Settings tab, saved, and restarted the app.
--Expected: Completion shows in History. Setting persists after restart.
--Result: PASS. The history record appeared correctly, and the settings toggled state remained after a full app restart.
+-Entry Point: Ran the full integrated app using `lib/main.dart` (via the BottomNavigationBar). 
+-Steps: Navigated to the Dashboard, tapped a habit, and tapped "View Activity / Log Completion" to open the Completion History screen. Logged a new completion record. Navigated back to the History tab at the bottom. Toggled "Show activity notes" in the Settings tab, saved, and restarted the app.
+-Expected: The new completion shows in the main History tab. The setting persists after restart.
+-Result: PASS. The history record appeared correctly, the completion button successfully routed to the right screen, and the settings toggle state remained after a full app restart.(See Screenshots 11 & 12)
+
+Test 5: Habit Editor Validation & Error Handling
+-Steps: Opened the Habit Editor. Entered only whitespace characters into the habit name field. Tapped "Save".
+-Expected: The app should reject the input with a validation error and not save the habit.
+-Result: PASS. The field highlighted red and displayed "Name is required and cannot be empty." (See Screenshot 7)
+
+Test 6: Feature Integration (Helper & Completion History)
+-Steps: Tapped the new Lightbulb icon on the Dashboard AppBar to open the Smart Helper. Then navigated to a habit, clicked "View Activity / Log Completion", and verified it opened the correct completion history screen for that habit.
+-Expected: Both screens should open without errors, and the completion screen should show the correct habit name.
+-Result: PASS. The Helper screen loaded correctly, and the Completion History screen was properly populated. (See Screenshots 8, 9, 10)
