@@ -21,6 +21,14 @@ class _HabitEditorScreenState extends State<HabitEditorScreen> {
 
   bool _isSaving = false; // Prevents duplicate saves
 
+  // 1. This list now dynamically handles custom categories
+  final List<String> _availableCategories = [
+    'Study',
+    'Health',
+    'Mindfulness',
+    'Other',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -30,6 +38,12 @@ class _HabitEditorScreenState extends State<HabitEditorScreen> {
     );
     _category = widget.habit?.category ?? 'Study';
     _targetFrequency = widget.habit?.targetFrequency ?? 1;
+
+    // 2. SAFETY CHECK: If editing a habit with a category not in the list,
+    // add it to the list so the dropdown doesn't crash.
+    if (!_availableCategories.contains(_category)) {
+      _availableCategories.add(_category);
+    }
   }
 
   @override
@@ -105,12 +119,10 @@ class _HabitEditorScreenState extends State<HabitEditorScreen> {
             DropdownButtonFormField<String>(
               initialValue: _category,
               decoration: const InputDecoration(labelText: 'Category'),
-              items: [
-                'Study',
-                'Health',
-                'Mindfulness',
-                'Other',
-              ].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+              // 3. Using the dynamic list here instead of hardcoded strings
+              items: _availableCategories
+                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  .toList(),
               onChanged: (val) => setState(() => _category = val!),
             ),
             const SizedBox(height: 16),

@@ -18,9 +18,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   void _loadHabits() async {
     final habits = await DatabaseHelper.instance.getHabits();
-    setState(() {
-      _habits = habits;
-    });
+    if (mounted) {
+      setState(() {
+        _habits = habits;
+      });
+    }
   }
 
   @override
