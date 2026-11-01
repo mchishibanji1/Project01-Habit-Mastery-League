@@ -30,6 +30,27 @@ tested separately using the Delete check habit.
 
 ## Remaining checks
 
-- Final integrated app verification on Pixel 8.
 - Previously identified category compatibility and async lifecycle concerns.
 - Presentation-specific evidence checks.
+
+
+## Pixel 8 Integrated App Verification
+
+Device: Pixel_8_Test emulator, Android 16, API 36
+Entry point: lib/main.dart
+Networking: Airplane mode enabled and Wi-Fi disabled.
+
+- Initial empty dashboard displayed correctly.
+- Habit creation and completion creation/editing worked offline.
+- Settings and completion records survived app closure and reopening.
+- A completion dated yesterday remained eligible for today's suggestion.
+- After changing the completion date to today, the helper excluded the habit.
+- Manual habit selection opened the correct activity screen.
+- History displayed 1 matching record and 1 completed record.
+- Canceling completion deletion preserved the record.
+- Confirming completion deletion removed the record and preserved its parent.
+- Habit name and weekly target could be edited.
+- Canceling habit deletion preserved the habit.
+- Confirmed habit deletion remained effective after reopening the app.
+
+Evidence: Screenshots 21–31.
