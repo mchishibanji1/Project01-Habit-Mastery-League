@@ -1,17 +1,35 @@
-# habit_mastery_league
+#Habit Mastery League
 
-A new Flutter project.
+#Project Overview
+Habit Mastery League is an offline-first mobile application designed to help users build consistent daily or weekly routines. Users can create habits, log their progress, review their completion history, and receive local, data-driven suggestions on what to focus on next. The app is built with Flutter and utilizes SQLite for relational data and SharedPreferences for local settings. It operates 100% locally without any cloud backend or internet connection.
 
-## Getting Started
+#Team Roles
+This project was completed by a two-person team:
+*   Marc Chishibanji: 
+    *   Frontend UI (Dashboard, Habit Editor, Habit Details).
+    *   Global Navigation (main.dart / BottomNavigationBar).
+    *   Habit CRUD database methods.
+    *   Widget testing and manual persistence testing.
+*   Rob Han:
+    *   SQLite database schema and setup.
+    *   Completion History and Settings screens.
+    *   HabitCompletion CRUD and Settings repository.
+    *   Local Smart Helper implementation and evaluation.
 
-This project is a starting point for a Flutter application.
+#Features Implemented
+*   Habit Management: Full CRUD (Create, Read, Update, Delete) for habits, including whitespace validation and confirmation dialogs.
+*   Completion Tracking: Log activity for specific habits and view detailed completion histories.
+*   History & Insights: Filter completion records by habit, category, and time period. View aggregate completion counts.
+*   Settings:** Manage app preferences (e.g., toggling activity notes, default history periods) using SharedPreferences.
+*   Local Smart Helper: A rule-based recommendation system that suggests a habit to focus on based on current incomplete habits and recent progress.
+*   Offline-First: Full functionality without internet access. Data persists across app restarts.
 
-A few resources to get you started if this is your first Flutter project:
+#Setup & Installation
+#Prerequisites
+*   Flutter SDK (latest stable version)
+*   Android Studio (for emulator) or a physical Android device.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+ #Installation Steps
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/mchishibanji1/Project01-Habit-Mastery-League.git
